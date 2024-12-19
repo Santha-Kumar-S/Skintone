@@ -15,6 +15,17 @@
         <form method="post" action="/skin_tone_predict" enctype="multipart/form-data">
             <div class="uploadImage">
                 <input type="file" placeholder="uploadImage" name="image" class="upinput">
+                <span id="openCamera" class="camera-icon">📷</span>
+
+            </div>
+            <div>
+                <h4>Image Preview:</h4>
+                <img id="imagePreview" src="" alt="Image Preview">
+            </div>
+            <div>
+                <video id="camera" width="320" height="240" autoplay style="display: none;"></video><br>
+                <button id="capture" style="display: none;">Capture</button>
+                <canvas id="snapshot" width="320" height="240" style="display: none;"></canvas>
             </div>
             <input type="submit" value="Predict Tone" class="predict_Tone"/>
         </form>
@@ -152,6 +163,47 @@
      let nxtBtn = document.getElementById("nxtBtn")
      let body_measurement = document.getElementById("body_measurement")
    
+     $(document).ready(() => {
+            const cameraIcon = $('#openCamera');
+            const camera = $('#camera');
+            const captureButton = $('#capture');
+            const snapshotCanvas = $('#snapshot');
+            const imagePreview = $('#imagePreview');
+    // Open camera when camera icon is clicked
+    cameraIcon.click(() => {
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        navigator.mediaDevices.getUserMedia({ video: true })
+                            .then((stream) => {
+                                camera.show();
+                                captureButton.show();
+                                camera[0].srcObject = stream;
+                                camera[0].play();
+                            })
+                            .catch((error) => {
+                                alert('Error accessing camera: ' + error);
+                            });
+                    } else {
+                        alert('Camera not supported');
+                    }
+                });
+      // Capture the image from the camera
+      captureButton.click((event) => {
+                event.preventDefault();
+                const context = snapshotCanvas[0].getContext('2d');
+                context.drawImage(camera[0], 0, 0, snapshotCanvas.width(), snapshotCanvas.height());
+                const imageData = snapshotCanvas[0].toDataURL('image/png');
+                
+                // Only set the image preview once
+                imagePreview.attr('src', imageData);
+
+                // Hide camera and canvas after capture
+                camera.hide();
+                snapshotCanvas.hide();
+                captureButton.hide();
+            });
+     });
+
+
      nxtBtn.addEventListener('click',()=>{
         genderForm.style.display='none'
         body_measurement.style.display='block'
